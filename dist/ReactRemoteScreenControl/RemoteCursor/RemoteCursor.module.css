@@ -1,0 +1,15 @@
+.cursorContainer {
+  position: absolute;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.cursorDefault {
+  width: 1rem;
+  height: 1rem;
+  background-color: white;
+  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.5);
+  border-bottom-left-radius: 100%;
+  border-bottom-right-radius: 100%;
+  border-top-right-radius: 100%;
+}

@@ -1,0 +1,47 @@
+.stream {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stream > video {
+  max-width: 100%;
+  max-height: 100%;
+  border: 2px solid black;
+  box-sizing: border-box;
+}
+
+.callPlate {
+  position: fixed;
+  background-color: #8ab7d7;
+  padding: 0.5rem;
+  bottom: 0;
+  right: 0;
+  color: white;
+  border-top-left-radius: 5px;
+}
+.callPlate > input {
+  width: 5rem;
+  margin-right: 0.5rem;
+  border-radius: 3px;
+  border: none;
+  padding: 0.25rem;
+}
+.callPlate > button {
+  border-radius: 3px;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  background-color: #ebebeb;
+  cursor: pointer;
+}
+.callPlate > button:disabled {
+  opacity: 0.8;
+  cursor: default;
+}
+
+.myId {
+  margin-bottom: 0.5rem;
+}
