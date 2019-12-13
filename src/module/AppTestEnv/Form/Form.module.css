@@ -1,0 +1,46 @@
+.formContainer{
+  display: flex;
+  flex-direction: column;
+  width: 20rem;
+}
+
+.formContainer > input{
+  outline: none;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+}
+.formContainer > span{
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formContainer > textarea{
+  outline: none;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+}
+
+.testDiv{
+  text-align: center;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  border: 1px solid black;
+  cursor: pointer;
+}
+
+.scrollable{
+  height: 5rem;
+  overflow: scroll;
+}
+
+.scrollableX{
+  white-space: nowrap;
+  overflow-x: scroll;
+  padding-bottom: 1rem;
+}

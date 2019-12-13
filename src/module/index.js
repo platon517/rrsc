@@ -1,4 +1,4 @@
 import React from 'react';
-import {RrscPlate} from "../lib";
+import App from "./AppTestEnv/App";
 
-export default () => <RrscPlate server={'ws://localhost:3000/'} />
+export default () => <App/>

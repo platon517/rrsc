@@ -143,13 +143,13 @@ export const withRRSC = WrappedComponent =>
       }
     };
 
-    onScrollSendData = throttle(10, direction => {
+    onScrollSendData = throttle(10, (speedX, speedY) => {
       const { dataChannel, isStreamConsumer } = this.state;
       if (dataChannel?.readyState === "open" && isStreamConsumer) {
         dataChannel.send(
           JSON.stringify({
             type: "scroll",
-            data: { direction }
+            data: { speedX, speedY }
           })
         );
       }
@@ -157,7 +157,7 @@ export const withRRSC = WrappedComponent =>
 
     onScroll = e => {
       if (this.state.mouseInVideo) {
-        this.onScrollSendData(e.deltaY > 0);
+        this.onScrollSendData(e.deltaX, e.deltaY);
       }
     };
 
@@ -398,7 +398,7 @@ export const withRRSC = WrappedComponent =>
           const element = document.elementFromPoint(x, y);
 
           const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-            window.HTMLInputElement.prototype,
+            window[element.constructor.name].prototype,
             "value"
           ).set;
 
@@ -431,9 +431,8 @@ export const withRRSC = WrappedComponent =>
           const scrollParent = getScrollParent(element);
 
           if (scrollParent !== undefined) {
-            parsedData.data.direction
-              ? (scrollParent.scrollTop += 5)
-              : (scrollParent.scrollTop -= 5);
+            scrollParent.scrollTop += parsedData.data.speedY;
+            scrollParent.scrollLeft += parsedData.data.speedX;
           }
         }
       };
