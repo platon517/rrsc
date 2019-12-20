@@ -5,8 +5,8 @@ html, body {
 }
 
 .app {
-  width: 100%;
-  min-height: 100vh;
+  width: 110vw;
+  min-height: 110vh;
   background-color: #ebebeb;
   display: flex;
   align-items: center;

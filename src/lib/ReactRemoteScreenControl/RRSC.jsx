@@ -2,11 +2,7 @@ import React from "react";
 import { throttle } from "throttle-debounce";
 
 import { RemoteCursor } from "./RemoteCursor/RemoteCursor";
-import {
-  setSocketEvent,
-  socketConnect,
-  socketSend
-} from "../helpers/wsHelper";
+import { setSocketEvent, socketConnect, socketSend } from "../helpers/wsHelper";
 import { iceServersDefault } from "../helpers/peersHelper";
 import { getScrollParent } from "../helpers/getScrollableParent";
 import styles from "./RRSC.module.css";
@@ -143,7 +139,7 @@ export const withRRSC = WrappedComponent =>
       }
     };
 
-    onScrollSendData = throttle(10, (speedX, speedY) => {
+    onScrollSendData = throttle(100, (speedX, speedY) => {
       const { dataChannel, isStreamConsumer } = this.state;
       if (dataChannel?.readyState === "open" && isStreamConsumer) {
         dataChannel.send(
@@ -358,6 +354,15 @@ export const withRRSC = WrappedComponent =>
       this.streamedScreen.play();
     };
 
+    dispatchMouseEvents = element => {
+      const events = ["mouseover", "mousedown", "mouseup", "click"];
+      events.forEach(event => {
+        const clickEvent = document.createEvent("MouseEvents");
+        clickEvent.initEvent(event, true, true);
+        element.dispatchEvent(clickEvent);
+      });
+    };
+
     setDataChannel = dataChannel => {
       dataChannel.onopen = () => {
         console.log("Cursor channel opened");
@@ -386,7 +391,7 @@ export const withRRSC = WrappedComponent =>
 
           const element = document.elementFromPoint(x, y);
           if (element) {
-            element.click();
+            this.dispatchMouseEvents(element);
             element.focus();
           }
         }
@@ -428,7 +433,11 @@ export const withRRSC = WrappedComponent =>
 
           const element = document.elementFromPoint(x, y);
 
-          const scrollParent = getScrollParent(element);
+          const scrollParent = getScrollParent(
+            element,
+            parsedData.data.speedY,
+            parsedData.data.speedX
+          );
 
           if (scrollParent !== undefined) {
             scrollParent.scrollTop += parsedData.data.speedY;
@@ -462,7 +471,8 @@ export const withRRSC = WrappedComponent =>
       const {
         RemoteCursorComponent = RemoteCursor,
         videoContainer = CustomVideoContainer,
-        videoProps = {}
+        videoProps = {},
+        isAbleCall
       } = this.props;
 
       return (
@@ -476,11 +486,12 @@ export const withRRSC = WrappedComponent =>
             rrscSetContrUserId={this.setContrUserId}
             rrscAskContrUser={this.callToStream}
             rrscDisconnect={this.initDisconnect}
+            isAbleCall={isAbleCall}
           />
           {!isStreamConsumer && isStreaming && (
             <RemoteCursorComponent cursorPosition={cursorPosition} />
           )}
-          {isStreamConsumer && (
+          {isStreamConsumer &&
             videoContainer(
               <video
                 ref={streamedScreen => (this.streamedScreen = streamedScreen)}
@@ -495,8 +506,7 @@ export const withRRSC = WrappedComponent =>
                 onMouseEnter={this.onMouseEnter}
                 onMouseLeave={this.onMouseLeave}
               />
-            )
-          )}
+            )}
         </>
       );
     }
@@ -514,21 +524,27 @@ class TestComponent extends React.PureComponent {
       rrscSetContrUserId,
       rrscAskContrUser,
       rrscIsStreaming,
-      rrscDisconnect
+      rrscDisconnect,
+      isAbleCall
     } = this.props;
     return (
       <div className={styles.callPlate}>
         <div className={styles.myId}>My id: {rrscMyId}</div>
-        <input
-          value={rrscContrUserId}
-          onChange={e => rrscSetContrUserId(e.target.value)}
-          disabled={rrscIsStreaming}
-        />
-        {!rrscIsStreaming && (
-          <button disabled={!rrscContrUserId} onClick={rrscAskContrUser}>
-            call
-          </button>
-        )}
+        {
+          isAbleCall &&
+            <>
+              <input
+                value={rrscContrUserId}
+                onChange={e => rrscSetContrUserId(e.target.value)}
+                disabled={rrscIsStreaming}
+              />
+              {!rrscIsStreaming && (
+                <button disabled={!rrscContrUserId} onClick={rrscAskContrUser}>
+                  call
+                </button>
+              )}
+            </>
+        }
         {rrscIsStreaming && (
           <button onClick={rrscDisconnect}>disconnect</button>
         )}

@@ -147,7 +147,7 @@ export const withRRSC = WrappedComponent => {
         }
       });
 
-      _defineProperty(this, "onScrollSendData", throttle(10, direction => {
+      _defineProperty(this, "onScrollSendData", throttle(100, (speedX, speedY) => {
         const {
           dataChannel,
           isStreamConsumer
@@ -157,7 +157,8 @@ export const withRRSC = WrappedComponent => {
           dataChannel.send(JSON.stringify({
             type: "scroll",
             data: {
-              direction
+              speedX,
+              speedY
             }
           }));
         }
@@ -165,7 +166,7 @@ export const withRRSC = WrappedComponent => {
 
       _defineProperty(this, "onScroll", e => {
         if (this.state.mouseInVideo) {
-          this.onScrollSendData(e.deltaY > 0);
+          this.onScrollSendData(e.deltaX, e.deltaY);
         }
       });
 
@@ -382,6 +383,15 @@ export const withRRSC = WrappedComponent => {
         this.streamedScreen.play();
       });
 
+      _defineProperty(this, "dispatchMouseEvents", element => {
+        const events = ["mouseover", "mousedown", "mouseup", "click"];
+        events.forEach(event => {
+          const clickEvent = document.createEvent("MouseEvents");
+          clickEvent.initEvent(event, true, true);
+          element.dispatchEvent(clickEvent);
+        });
+      });
+
       _defineProperty(this, "setDataChannel", dataChannel => {
         dataChannel.onopen = () => {
           console.log("Cursor channel opened");
@@ -421,7 +431,7 @@ export const withRRSC = WrappedComponent => {
             const element = document.elementFromPoint(x, y);
 
             if (element) {
-              element.click();
+              this.dispatchMouseEvents(element);
               element.focus();
             }
           }
@@ -434,7 +444,7 @@ export const withRRSC = WrappedComponent => {
               }
             } = this.state;
             const element = document.elementFromPoint(x, y);
-            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window[element.constructor.name].prototype, "value").set;
 
             if (parsedData.type === "keyPress") {
               const char = String.fromCharCode(parsedData.data.which || parsedData.data.keyCode);
@@ -465,10 +475,11 @@ export const withRRSC = WrappedComponent => {
               }
             } = this.state;
             const element = document.elementFromPoint(x, y);
-            const scrollParent = getScrollParent(element);
+            const scrollParent = getScrollParent(element, parsedData.data.speedY, parsedData.data.speedX);
 
             if (scrollParent !== undefined) {
-              parsedData.data.direction ? scrollParent.scrollTop += 5 : scrollParent.scrollTop -= 5;
+              scrollParent.scrollTop += parsedData.data.speedY;
+              scrollParent.scrollLeft += parsedData.data.speedX;
             }
           }
         };
@@ -523,7 +534,8 @@ export const withRRSC = WrappedComponent => {
       const {
         RemoteCursorComponent = RemoteCursor,
         videoContainer = CustomVideoContainer,
-        videoProps = {}
+        videoProps = {},
+        isAbleCall
       } = this.props;
       return React.createElement(React.Fragment, null, React.createElement(WrappedComponent, {
         rrscMyId: wsId,
@@ -533,7 +545,8 @@ export const withRRSC = WrappedComponent => {
         rrscContrUserId: contrUserId,
         rrscSetContrUserId: this.setContrUserId,
         rrscAskContrUser: this.callToStream,
-        rrscDisconnect: this.initDisconnect
+        rrscDisconnect: this.initDisconnect,
+        isAbleCall: isAbleCall
       }), !isStreamConsumer && isStreaming && React.createElement(RemoteCursorComponent, {
         cursorPosition: cursorPosition
       }), isStreamConsumer && videoContainer(React.createElement("video", _extends({
@@ -565,20 +578,21 @@ class TestComponent extends React.PureComponent {
       rrscSetContrUserId,
       rrscAskContrUser,
       rrscIsStreaming,
-      rrscDisconnect
+      rrscDisconnect,
+      isAbleCall
     } = this.props;
     return React.createElement("div", {
       className: styles.callPlate
     }, React.createElement("div", {
       className: styles.myId
-    }, "My id: ", rrscMyId), React.createElement("input", {
+    }, "My id: ", rrscMyId), isAbleCall && React.createElement(React.Fragment, null, React.createElement("input", {
       value: rrscContrUserId,
       onChange: e => rrscSetContrUserId(e.target.value),
       disabled: rrscIsStreaming
     }), !rrscIsStreaming && React.createElement("button", {
       disabled: !rrscContrUserId,
       onClick: rrscAskContrUser
-    }, "call"), rrscIsStreaming && React.createElement("button", {
+    }, "call")), rrscIsStreaming && React.createElement("button", {
       onClick: rrscDisconnect
     }, "disconnect"));
   }
